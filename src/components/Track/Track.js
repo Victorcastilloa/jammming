@@ -47,6 +47,8 @@ class Track extends React.Component {
             <audio
               src={this.props.track.preview_url}
               controls
+              type= 'audio/mpeg'
+              aria-roledescription={`${this.props.track.name} by ${this.props.track.artists}`}
             />
           </div>
           <p>

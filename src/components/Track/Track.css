@@ -45,3 +45,10 @@ width: 70%;
 height: 2rem;
 background: transparent ;
 }
+
+@media only screen and (max-width: 600px) {
+
+  audio {
+    padding-right: 5%;
+  }
+}

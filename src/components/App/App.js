@@ -4,15 +4,21 @@ import SearchBar from "../SeachBar/SearchBar";
 import SearchResults from "../SearchResults/SearchResults";
 import Playlist from "../Playlist/Playlist";
 import Spotify from "../../util/Spotify";
+import Loading from '../Loading/Loading';
+import Modal from 'react-modal';
+
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       searchResults: [],
+      selectedTracks: [],
       playlistName: "My Playlist",
       playlistTracks: [],
-      previewUrl: ''
+      previewUrl: "",
+      isLoading: false,
+      isSaved: false,
     };
 
     this.addTrack = this.addTrack.bind(this);
@@ -20,6 +26,7 @@ class App extends React.Component {
     this.updatePlaylistName = this.updatePlaylistName.bind(this);
     this.savePlaylist = this.savePlaylist.bind(this);
     this.search = this.search.bind(this);
+    this.searchTermUpdate = this.searchTermUpdate.bind(this)
   }
 
   addTrack(track) {
@@ -45,37 +52,86 @@ class App extends React.Component {
     });
   }
 
-  savePlaylist() { try {
-    let trackers= this.state.playlistTracks;
-    console.log(trackers);
-    let trackUris = this.state.playlistTracks.map((track) => track.uri);
-    Spotify.savePlaylist(this.state.playlistName, trackUris).then(() => {
-      this.setState({
-        playlistName: "New Playlist",
-        playlistTracks: [],
+  savePlaylist() {
+    try {
+      let trackers = this.state.playlistTracks;
+      console.log(trackers);
+      let trackUris = this.state.playlistTracks.map((track) => track.uri);
+      this.setState({ isLoading: true });
+      Spotify.savePlaylist(this.state.playlistName, trackUris).then(() => {
+        this.setState({
+          playlistName: "New Playlist",
+          playlistTracks: [],
+          isLoading: false,
+          isSaved: true,
+        });
+
+        setTimeout(() => {
+          this.setState({ isSaved: false });
+        }, 2000);
       });
-      alert('Playlist added')
-    });} catch(error) {
-      console.log(error)
-      alert('Add items first');
+    } catch (error) {
+      console.log(error);
+      alert("Add items first");
     }
   }
 
   search(term) {
+    sessionStorage.setItem("searchTerm", term);
     Spotify.search(term).then((searchResults) => {
       this.setState({ searchResults: searchResults });
     });
   }
 
+  searchTermUpdate() {
+    const searchTerm = sessionStorage.getItem("searchTerm");
+    if (searchTerm) {
+
+      this.setState({ searchTerm });
+      
+      sessionStorage.removeItem("searchTerm");
+    }
+  }
+
   render() {
-    return (
+    return this.state.isLoading ? (
+      <Loading />
+    ) : (
       <div>
         <h1>
           Ja<span className="highlight">mmm</span>ing
         </h1>
         <div className="App">
-          <SearchBar onSearch={this.search} />
+          <SearchBar onSearch={this.search} value={this.state.searchTerm} />
           <div className="App-playlist">
+            <Modal
+              isOpen={this.state.isSaved}
+              style={{
+                overlay: {
+                  backgroundColor: "rgba(256, 256, 256, 0)",
+                  width: "100%",
+                  height: "100%",
+                },
+                content: {
+                  color: "#white",
+                  textAlign: "center",
+                  padding: "0",
+                  backgroundColor: "rgba(256, 256, 256, 0.3)",
+                  position: "relative",
+                  top: "50%",
+                  right: "10%",
+                  maxWidth: "100%",
+                  float: "center",
+                  margin: "5%",
+                },
+              }}
+              contentLabel="Playlist Saved"
+            >
+              <div className="modal">
+                <h2>Playlist saved</h2>
+              </div>
+            </Modal>
+
             <SearchResults
               searchResults={this.state.searchResults}
               onAdd={this.addTrack}
@@ -92,6 +148,7 @@ class App extends React.Component {
       </div>
     );
   }
-}
+};
+
 
 export default App;
