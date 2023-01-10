@@ -11,9 +11,10 @@ import Modal from 'react-modal';
 class App extends React.Component {
   constructor(props) {
     super(props);
+    const savedPlaylist = JSON.parse(localStorage.getItem("playlist"));
     this.state = {
       searchResults: [],
-      selectedTracks: [],
+      selectedTracks: savedPlaylist || [],
       playlistName: "My Playlist",
       playlistTracks: [],
       previewUrl: "",
@@ -57,6 +58,7 @@ class App extends React.Component {
       let trackers = this.state.playlistTracks;
       console.log(trackers);
       let trackUris = this.state.playlistTracks.map((track) => track.uri);
+      localStorage.setItem("playlist", JSON.stringify(trackUris));
       this.setState({ isLoading: true });
       Spotify.savePlaylist(this.state.playlistName, trackUris).then(() => {
         this.setState({
@@ -73,6 +75,9 @@ class App extends React.Component {
     } catch (error) {
       console.log(error);
       alert("Add items first");
+      this.setState({
+        isLoading: false
+      })
     }
   }
 
@@ -109,16 +114,13 @@ class App extends React.Component {
               style={{
                 overlay: {
                   backgroundColor: "rgba(256, 256, 256, 0)",
-                  width: "100%",
-                  height: "100%",
                 },
                 content: {
                   color: "#white",
                   textAlign: "center",
                   padding: "0",
-                  backgroundColor: "rgba(256, 256, 256, 0.3)",
+                  backgroundColor: "rgba(256, 256, 256, 0.2)",
                   position: "relative",
-                  top: "50%",
                   right: "10%",
                   maxWidth: "100%",
                   float: "center",
@@ -136,6 +138,7 @@ class App extends React.Component {
               searchResults={this.state.searchResults}
               onAdd={this.addTrack}
             />
+
             <Playlist
               playlistName={this.state.playlistName}
               playlistTracks={this.state.playlistTracks}

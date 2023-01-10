@@ -1,16 +1,16 @@
 
 
 let userAccessToken;
-let expiresInMatch;
+let expiresIn;
 const clientID = "bce7953733c640668816dceaada69755";
-const redirectURI = "http://localhost:3000/";
+const redirectURI = "http://castillo.surge.sh/";
 
 const Spotify = {
   getAccessToken() {
     
     if (userAccessToken) {
       const currentTime = new Date().getTime() / 1000; // in seconds
-      if (currentTime >= expiresInMatch) {
+      if (currentTime >= expiresIn) {
         userAccessToken = null;
       } else {
         return userAccessToken;
@@ -18,14 +18,11 @@ const Spotify = {
     }
 
     const accessTokenMatch = window.location.href.match(/access_token=([^&]*)/);
-    const expirationTimeMatch =
-      window.location.href.match(/expires_in=([^&]*)/);
+    const expiresInMatch = window.location.href.match(/expires_in=([^&]*)/);
 
-    if (accessTokenMatch && expirationTimeMatch) {
+    if (accessTokenMatch && expiresInMatch) {
       userAccessToken = accessTokenMatch[1];
-      const expiresIn = new Date().getTime() / 1000 + Number(expiresInMatch[1]);
-
-      window.setTimeout(() => (userAccessToken = ""), expiresIn * 1000);
+      expiresIn = new Date().getTime() / 1000 + Number(expiresInMatch[1]);
       window.history.pushState("Access Token", null, "/");
       return userAccessToken;
     } else {
